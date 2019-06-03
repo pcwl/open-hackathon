@@ -1,25 +1,5 @@
 /*
- * Copyright (c) Microsoft Open Technologies (Shanghai) Co. Ltd.  All rights reserved.
- *
- * The MIT License (MIT)
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * This file is covered by the LICENSING file in the root of this project.
  */
 
 (function ($, oh) {
@@ -97,6 +77,14 @@
                 }
             }));
         });
+    }
+
+    function showAzureAccount() {
+         if("team" in hackathon_detail && "azure" in hackathon_detail["team"] && hackathon_detail["team"]["azure"]){
+             $('#azure_show_space').prepend('Azure 账号：' + hackathon_detail["team"]["azure"]);
+         } else {
+             $('#azure_show_space').prepend('暂无 Azure 账号');
+         }
     }
 
     function isEdit() {
@@ -192,6 +180,7 @@
                 oh.comm.alert('错误', data.error.friendly_message);
             } else {
                 hackathon_detail = data;
+                showAzureAccount();
             }
         });
 
@@ -439,6 +428,21 @@
         });
     }
 
+    // send email
+    function sendEmailAzure(team_id) {
+        sendEmailTeam({id: team_id}).then(function (data) {
+            if (data.error) {
+                oh.comm.alert('错误', data.error.friendly_message);
+            } else {
+                oh.comm.alert("提示", "发送成功!");
+            }
+        });
+    }
+
+    function sendEmailTeam(data) {
+        return oh.api.team.email.put({body: data, header: {hackathon_name: hackathon_name}});
+    }
+
     // update the project cover
     function updateProjectCover(url) {
         updateTeam({id: tid, cover: url}).then(function (data) {
@@ -670,6 +674,14 @@
 
         $('body').on('click', '[data-role="logo-edit"]', function (e) {
             $('#teamLogoModal').modal('show');
+        });
+
+        $('body').on('click', '[data-role="send"]', function (e) {
+
+            var btn = $(this);
+            var team_id = btn.data('id');
+
+            sendEmailAzure(team_id);
         });
 
         $('#talent_list').on('click', '[data-role="denied"]', function (e) {

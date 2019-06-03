@@ -1,26 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright (c) Microsoft Open Technologies (Shanghai) Co. Ltd.  All rights reserved.
-
-The MIT License (MIT)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This file is covered by the LICENSING file in the root of this project.
 """
 
 """constants used in template files"""
@@ -184,3 +164,48 @@ class AZURE_UNIT:
 
         CONFIG_KEY_FILE_URIS = "fileUris"
         CONFIG_KEY_RUN = "commandToExecute"
+
+
+class K8S_UNIT:
+    """constants for k8s virtual_environment in template file"""
+    NAME = 'name'
+
+    CONFIG_CLUSTER = 'cluster'
+    CONFIG_NAMESPACES = "namespace"
+    CONFIG_API_SERVER = "api_url"  # K8s ApiServer url
+    CONFIG_API_TOKEN = "token"  # K8s namespaced ServiceAccount Token
+
+    PORTS = 'ports'
+    PORTS_NAME = 'name'
+    PORTS_PORT = 'port'
+    PORTS_PROTOCOL = 'protocol'
+    PORTS_PUBLIC = "public"
+    PORTS_PUBLIC_PORT = 'public_port'
+
+    REMOTE = 'remote'
+    REMOTE_PROVIDER = 'provider'
+    REMOTE_PROTOCOL = 'protocol'
+    REMOTE_USERNAME = 'username'
+    REMOTE_PASSWORD = 'password'
+    REMOTE_PORT = 'port'
+
+
+    # remote parameter name
+    REMOTE_PARAMETER_NAME = 'name'
+    REMOTE_PARAMETER_DISPLAY_NAME = 'displayname'
+    REMOTE_PARAMETER_HOST_NAME = 'hostname'
+    REMOTE_PARAMETER_PROTOCOL = 'protocol'
+    REMOTE_PARAMETER_PORT = 'port'
+    REMOTE_PARAMETER_USER_NAME = 'username'
+    REMOTE_PARAMETER_PASSWORD = 'password'
+
+    IMAGES = 'images'
+    IMAGES_IMAGE = 'image'
+
+    RESOURCES = 'resource'
+    RESOURCES_REQUESTS = 'requests'
+    RESOURCES_REQUESTS_CPU = 'cpu'
+    RESOURCES_REQUESTS_MEM = 'mem'
+    RESOURCES_LIMITS = 'limits'
+    RESOURCES_LIMITS_CPU = 'cpu'
+    RESOURCES_LIMITS_MEM = 'mem'

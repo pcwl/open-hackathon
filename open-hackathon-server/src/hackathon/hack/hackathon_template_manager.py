@@ -1,26 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright (c) Microsoft Open Technologies (Shanghai) Co. Ltd.  All rights reserved.
-
-The MIT License (MIT)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This file is covered by the LICENSING file in the root of this project.
 """
 
 import sys
@@ -33,8 +13,9 @@ from flask import g
 from hackathon.hmongo.models import Template
 
 from hackathon import Component, RequiredFeature, Context
-from hackathon.constants import VE_PROVIDER, TEMPLATE_STATUS
+from hackathon.constants import VE_PROVIDER, TEMPLATE_STATUS, CLOUD_PROVIDER
 from hackathon.hackathon_response import not_found, internal_server_error
+
 
 __all__ = ["HackathonTemplateManager"]
 
@@ -82,8 +63,8 @@ class HackathonTemplateManager(Component):
         return [t.dic() for t in hackathon.templates]
 
     def get_user_templates(self, user, hackathon):
-        template_list = self.__get_templates_by_user(user, hackathon)
         settings = []
+        template_list = self.__get_templates_by_user(user, hackathon)
         for template, content in template_list:
             template_units = []
             for unit in content.units:

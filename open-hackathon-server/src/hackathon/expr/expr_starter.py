@@ -1,26 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Copyright (c) Microsoft Open Technologies (Shanghai) Co. Ltd.  All rights reserved.
-
-The MIT License (MIT)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+This file is covered by the LICENSING file in the root of this project.
 """
 
 import sys
@@ -61,11 +41,14 @@ class ExprStarter(Component):
         new_context = Context(template_content=template_content,
                               template_name=context.template.name,
                               hackathon_id=context.hackathon.id,
-                              experiment_id=expr.id)
+                              experiment_id=expr.id,
+                              pre_alloc_enabled = context.pre_alloc_enabled)
         if context.get("user", None):
             new_context.user_id = context.user.id
-        self._internal_start_expr(new_context)
-        new_context.experiment = expr
+        if self._internal_start_expr(new_context):
+            new_context.experiment = expr
+        else:
+            new_context = None
         return new_context
 
     def stop_expr(self, context):

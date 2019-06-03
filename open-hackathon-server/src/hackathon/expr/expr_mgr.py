@@ -1,28 +1,7 @@
 # -*- coding: utf-8 -*-
-#
-# -----------------------------------------------------------------------------------
-# Copyright (c) Microsoft Open Technologies (Shanghai) Co. Ltd.  All rights reserved.
-#
-# The MIT License (MIT)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-# -----------------------------------------------------------------------------------
+"""
+This file is covered by the LICENSING file in the root of this project.
+"""
 
 import sys
 
@@ -35,7 +14,7 @@ from mongoengine import Q
 from hackathon import Component, RequiredFeature, Context
 from hackathon.constants import EStatus, VERemoteProvider, VE_PROVIDER, VEStatus, ReservedUser, \
     HACK_NOTICE_EVENT, HACK_NOTICE_CATEGORY, CLOUD_PROVIDER, HACKATHON_CONFIG
-from hackathon.hmongo.models import Experiment, User, Hackathon, UserHackathon
+from hackathon.hmongo.models import Experiment, User, Hackathon, UserHackathon, Template
 from hackathon.hackathon_response import not_found, ok
 
 __all__ = ["ExprManager"]
@@ -99,7 +78,7 @@ class ExprManager(Component):
         :return:
         """
         self.log.debug("begin to stop %s" % str(expr_id))
-        expr = Experiment.objects(id=expr_id, status=EStatus.RUNNING).first()
+        expr = Experiment.objects(id=expr_id).first()
         if expr is not None:
             starter = self.get_starter(expr.hackathon, expr.template)
             if starter:
@@ -137,7 +116,8 @@ class ExprManager(Component):
         users = User.objects(name=user_name).all() if user_name else []
 
         if user_name and status:
-            experiments_pagi = Experiment.objects(hackathon=hackathon, status=status, user__in=users).paginate(page, per_page)
+            experiments_pagi = Experiment.objects(hackathon=hackathon, status=status, user__in=users).paginate(page,
+                                                                                                               per_page)
         elif user_name and not status:
             experiments_pagi = Experiment.objects(hackathon=hackathon, user__in=users).paginate(page, per_page)
         elif not user_name and status:
@@ -178,36 +158,26 @@ class ExprManager(Component):
         for template in hackathon_templates:
             try:
                 template = template
-                pre_num = int(hackathon.config.get("pre_allocate_number", 1))
+                pre_num = int(hackathon.config.get(HACKATHON_CONFIG.PRE_ALLOCATE_NUMBER, 1))
                 query = Q(status=EStatus.STARTING) | Q(status=EStatus.RUNNING)
                 curr_num = Experiment.objects(user=None, hackathon=hackathon, template=template).filter(query).count()
-                if template.provider == VE_PROVIDER.AZURE:
-                    if curr_num < pre_num:
-                        remain_num = pre_num - curr_num
-                        start_num = Experiment.objects(user=None, template=template, status=EStatus.STARTING).count()
-                        if start_num > 0:
-                            self.log.debug("there is an azure env starting, will check later ... ")
-                            return
-                        else:
-                            self.log.debug(
-                                "no starting template: %s , remain num is %d ... " % (template.name, remain_num))
-                            self.start_expr(None, template.name, hackathon.name)
-                            break
-                elif template.provider == VE_PROVIDER.DOCKER:
-                    if hackathon.config.get('cloud_provider') == CLOUD_PROVIDER.ALAUDA:
-                        # don't create pre-env if alauda used
-                        continue
+                self.log.debug("pre_alloc_exprs: pre_num is %d, curr_num is %d, remain_num is %d " %
+                               (pre_num, curr_num, pre_num - curr_num))
 
-                    self.log.debug(
-                        "template name is %s, hackathon name is %s" % (template.name, hackathon.name))
-                    if curr_num < pre_num:
-                        remain_num = pre_num - curr_num
-                        start_num = Experiment.objects(user=None, template=template, status=EStatus.STARTING).count()
-                        if start_num > 0:
-                            self.log.debug("there is an docker container starting, will check later ... ")
-                            return
-                        self.log.debug("no idle template: %s, remain num is %d ... " % (template.name, remain_num))
-                        self.start_expr(None, template.name, hackathon.name)
+                # TODO Should support VE_PROVIDER.K8S only in future after k8s Template is supported
+                # if template.provider == VE_PROVIDER.K8S:
+                if curr_num < pre_num:
+                    start_num = Experiment.objects(user=None, template=template, status=EStatus.STARTING).count()
+                    allowed_currency = int(hackathon.config.get(HACKATHON_CONFIG.PRE_ALLOCATE_CONCURRENT, 1))
+                    if start_num >= allowed_currency:
+                        self.log.debug(
+                            "there are already %d Experiments starting, will check later ... " % allowed_currency)
+                        return
+                    else:
+                        remain_num = min(allowed_currency, pre_num) - start_num
+                        self.log.debug(
+                            "no starting template: %s , remain num is %d ... " % (template.name, remain_num))
+                        self.start_pre_alloc_exprs(None, template.name, hackathon.name, remain_num)
                         break
             except Exception as e:
                 self.log.error(e)
@@ -248,6 +218,10 @@ class ExprManager(Component):
         if not hackathon or not template:
             return starter
 
+        # TODO Interim workaround for kubernetes, need real implementation
+        if hackathon.config.get('cloud_provider') == CLOUD_PROVIDER.KUBERNETES:
+            return RequiredFeature("k8s_service")
+
         if template.provider == VE_PROVIDER.DOCKER:
             if HACKATHON_CONFIG.CLOUD_PROVIDER in hackathon.config:
                 if hackathon.config[HACKATHON_CONFIG.CLOUD_PROVIDER] == CLOUD_PROVIDER.AZURE:
@@ -256,6 +230,8 @@ class ExprManager(Component):
                     starter = RequiredFeature("alauda_docker")
         elif template.provider == VE_PROVIDER.AZURE:
             starter = RequiredFeature("azure_vm")
+        elif template.provider == VE_PROVIDER.K8S:
+            starter = RequiredFeature("k8s_service")
 
         return starter
 
@@ -268,9 +244,36 @@ class ExprManager(Component):
         context = starter.start_expr(Context(
             template=template,
             user=user,
-            hackathon=hackathon))
+            hackathon=hackathon,
+            pre_alloc_enabled=False))
 
         return self.__report_expr_status(context.experiment)
+
+    def start_pre_alloc_exprs(self, user, template_name, hackathon_name=None, pre_alloc_num=0):
+        self.log.debug("start_pre_alloc_exprs: %d " % pre_alloc_num)
+        if pre_alloc_num == 0:
+            return
+
+        hackathon = self.__verify_hackathon(hackathon_name)
+        template = self.__verify_template(hackathon, template_name)
+
+        starter = self.get_starter(hackathon, template)
+        if not starter:
+            raise PreconditionFailed("either template not supported or hackathon resource not configured")
+
+        while pre_alloc_num > 0:
+            context = starter.start_expr(Context(
+                template=template,
+                user=user,
+                hackathon=hackathon,
+                pre_alloc_enabled=True))
+
+            if context == None:
+                self.log.debug("pre_alloc_num left: %d " % pre_alloc_num)
+                break
+            else:
+                self.__report_expr_status(context.experiment)
+                pre_alloc_num -= 1
 
     def on_expr_started(self, experiment):
         hackathon = experiment.hackathon
@@ -302,6 +305,7 @@ class ExprManager(Component):
                     url = guacamole_host + '/guacamole/#/client/c/%s?name=%s' % (name, name)
                     remote_servers.append({
                         "name": guacamole_config["name"],
+                        "display_name": guacamole_config["displayname"],
                         "guacamole_host": guacamole_host,
                         "url": url})
 
@@ -314,8 +318,9 @@ class ExprManager(Component):
         ret["remote_servers"] = remote_servers
 
         # return public accessible web url
+        ve_provider = expr.virtual_environments[0].provider
         public_urls = []
-        if expr.template.provider == VE_PROVIDER.DOCKER:
+        if ve_provider == VE_PROVIDER.DOCKER:
             for ve in expr.virtual_environments:
                 container = ve.docker_container
                 # to restart hosted_docker expr if it stopped.
@@ -328,7 +333,7 @@ class ExprManager(Component):
                         public_urls.append({
                             "name": p.name,
                             "url": p.url.format(container.host_server.public_dns, p.public_port)})
-        else:
+        elif ve_provider == VE_PROVIDER.AZURE:
             for ve in expr.virtual_environments:
                 vm = ve.azure_resource
                 if not vm or not vm.end_points:
@@ -340,6 +345,20 @@ class ExprManager(Component):
                             "name": endpoint.name,
                             "url": endpoint.url.format(vm.dns, endpoint.public_port)
                         })
+        elif ve_provider == VE_PROVIDER.K8S:
+            # TODO public accessible http url
+            public_urls.append({
+                "name": "码云操作说明",
+                "url": "http://www.ubuntukylin.com/public/pdf/gitee.pdf"
+            })
+            public_urls.append({
+                "name": "Github操作说明",
+                "url": "http://www.ubuntukylin.com/public/pdf/github.pdf"
+            })
+            public_urls.append({
+                "name": "黑客松活动问卷",
+                "url": "https://www.wjx.cn/m/39517441.aspx"
+            })
 
         ret["public_urls"] = public_urls
         return ret

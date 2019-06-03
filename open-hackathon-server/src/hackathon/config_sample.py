@@ -1,28 +1,7 @@
 # -*- coding: utf-8 -*-
-#
-# -----------------------------------------------------------------------------------
-# Copyright (c) Microsoft Open Technologies (Shanghai) Co. Ltd.  All rights reserved.
-#
-# The MIT License (MIT)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-# -----------------------------------------------------------------------------------
+"""
+This file is covered by the LICENSING file in the root of this project.
+"""
 
 # "javascript" section for javascript. see @app.route('/config.js') in app/views.py
 
@@ -125,6 +104,40 @@ Config = {
             "app_id": "",
             "app_secret": "",
             "url_access_token": "https://oauth.api.189.cn/emp/oauth2/v3/access_token"
+        }
+    },
+    "ukylin": {
+        "k8s": {
+            "ips": ["119.3.202.71", "49.4.90.39"],
+            "template": {
+                "name": "Kubernetes",
+                "description": "Kubernetes",
+                "virtual_environments": [
+                    {
+                        "images": [
+                            {
+                                "image": "SOME IMAGE"
+                            }
+                        ],
+                        "cluster": {
+                            "token": "SOME TOKEN",
+                            "namespace": "default",
+                            "api_url": "SOME URL"
+                        },
+                        "ports": [
+                            {
+                                "public": True,
+                                "public_port": 30006,
+                                "protocol": "TCP",
+                                "name": "UKylin",
+                                "port": 5900
+                            }
+                        ],
+                        "provider": 3,
+                        "name": "ukylin"
+                    }
+                ]
+            }
         }
     }
 }

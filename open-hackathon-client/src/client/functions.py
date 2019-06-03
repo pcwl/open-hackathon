@@ -1,32 +1,12 @@
 # -*- coding: utf-8 -*-
-#
-# -----------------------------------------------------------------------------------
-# Copyright (c) Microsoft Open Technologies (Shanghai) Co. Ltd.  All rights reserved.
-#
-# The MIT License (MIT)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-# -----------------------------------------------------------------------------------
+"""
+This file is covered by the LICENSING file in the root of this project.
+"""
 
 import json, os, requests, urllib2
 from datetime import datetime
 from urlparse import parse_qs
+import ssl
 
 try:
     from config import Config
@@ -77,6 +57,7 @@ def get_class(kls):
 
 
 def post_to_remote(url, post_data, headers=None):
+    ssl.match_hostname = lambda cert, hostname: True
     default_headers = {"content-type": "application/json"}
     if headers is not None and isinstance(headers, dict):
         default_headers.update(headers)
@@ -87,6 +68,7 @@ def post_to_remote(url, post_data, headers=None):
 
 
 def put_to_remote(url, post_data, headers=None):
+    ssl.match_hostname = lambda cert, hostname: True
     default_headers = {"content-type": "application/json"}
     if headers is not None and isinstance(headers, dict):
         default_headers.update(headers)
@@ -97,6 +79,7 @@ def put_to_remote(url, post_data, headers=None):
 
 
 def get_remote(url, headers={}):
+    ssl.match_hostname = lambda cert, hostname: True
     opener = urllib2.build_opener(urllib2.HTTPHandler)
     request = urllib2.Request(url, None, headers)
     resp = opener.open(request)
@@ -104,6 +87,7 @@ def get_remote(url, headers={}):
 
 
 def delete_remote(url, headers=None):
+    ssl.match_hostname = lambda cert, hostname: True
     default_headers = {"content-type": "application/json"}
     if headers is not None and isinstance(headers, dict):
         default_headers.update(headers)

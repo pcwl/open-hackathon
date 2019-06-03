@@ -1,28 +1,7 @@
 # -*- coding: utf-8 -*-
-#
-# -----------------------------------------------------------------------------------
-# Copyright (c) Microsoft Open Technologies (Shanghai) Co. Ltd.  All rights reserved.
-#
-# The MIT License (MIT)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-# -----------------------------------------------------------------------------------
+"""
+This file is covered by the LICENSING file in the root of this project.
+"""
 
 
 class HTTP_HEADER:
@@ -89,6 +68,7 @@ class HACKATHON_CONFIG:
         PRE_ALLOCATE_ENABLED: bool, whether to pre-start several environment. default false
         PRE_ALLOCATE_NUMBER: int, the maximum count of pre-start environment per hackathon and per template. default 1
         PRE_ALLOCATE_INTERVAL_SECONDS: int, interval seconds for pre-allocate job
+        PRE_ALLOCATE_CONCURRENT: int, how many Experiment can be started at the same time
         ALAUDA_ENABLED: bool,default false, whether to use alauda service, no azure resource needed if true
         FREEDOM_TEAM: bool,default true,Whether to allow freedom of the team
     """
@@ -99,6 +79,7 @@ class HACKATHON_CONFIG:
     PRE_ALLOCATE_ENABLED = "pre_allocate_enabled"
     PRE_ALLOCATE_NUMBER = "pre_allocate_number"
     PRE_ALLOCATE_INTERVAL_SECONDS = "pre_allocate_interval_second"
+    PRE_ALLOCATE_CONCURRENT = "pre_allocate_concurrent"
     FREEDOM_TEAM = "freedom_team"
     CLOUD_PROVIDER = "cloud_provider"
     DEV_PLAN_REQUIRED = "dev_plan_required"
@@ -131,6 +112,7 @@ class VE_PROVIDER:
     DOCKER = 0
     AZURE = 1
     ALAUDA = 2
+    K8S = 3
 
 
 class AZURE_RESOURCE_TYPE:
@@ -283,6 +265,7 @@ class HACK_STATUS:
     ONLINE = 1
     OFFLINE = 2
     APPLY_ONLINE = 3
+
 
 class HACK_TYPE:
     """
@@ -548,3 +531,11 @@ class CLOUD_PROVIDER:
     NONE = 0
     AZURE = 1
     ALAUDA = 2
+    KUBERNETES = 3
+
+
+class K8S_DEPLOYMENT_STATUS:
+    PENDING = 0
+    AVAILABLE = 1
+    PAUSE = 2
+    ERROR = 3
